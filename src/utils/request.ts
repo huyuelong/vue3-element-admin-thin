@@ -5,7 +5,8 @@ import { TOKEN_KEY } from "@/enums/CacheEnum";
 
 // 创建 axios 实例
 const service = axios.create({
-  baseURL: import.meta.env.VITE_APP_BASE_API,
+  // baseURL: import.meta.env.VITE_APP_BASE_API,
+  baseURL: "https://api.7dgame.com",
   timeout: 50000,
   headers: { "Content-Type": "application/json;charset=utf-8" },
 });

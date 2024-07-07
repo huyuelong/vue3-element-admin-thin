@@ -1,4 +1,13 @@
+import { LoginItem } from "@/types/login";
 import request from "@/utils/request";
+
+export const LoginAPI = (data: LoginItem) => {
+  return request({
+    url: "/sites/login",
+    method: "post",
+    data: JSON.stringify(data),
+  });
+};
 
 class AuthAPI {
   /** 登录 接口*/
