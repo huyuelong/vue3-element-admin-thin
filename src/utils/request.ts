@@ -12,43 +12,21 @@ const service = axios.create({
 });
 
 // 请求拦截器
-service.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const accessToken = localStorage.getItem(TOKEN_KEY);
-    if (accessToken) {
-      config.headers.Authorization = accessToken;
-    }
-    return config;
-  },
-  (error: any) => {
-    return Promise.reject(error);
-  }
-);
-
-// 响应拦截器
 service.interceptors.response.use(
   (response: AxiosResponse) => {
-    // 检查配置的响应类型是否为二进制类型（'blob' 或 'arraybuffer'）, 如果是，直接返回响应对象
-    if (
-      response.config.responseType === "blob" ||
-      response.config.responseType === "arraybuffer"
-    ) {
-      return response;
-    }
-
-    const { code, data, msg } = response.data;
-    if (code === ResultEnum.SUCCESS) {
+    const data = response.data;
+    if (response.status === 200) {
       return data;
+    } else {
+      const msg = data?.msg || "系统出错";
+      ElMessage.error(msg);
+      return Promise.reject(new Error(msg));
     }
-
-    ElMessage.error(msg || "系统出错");
-    return Promise.reject(new Error(msg || "Error"));
   },
   (error: any) => {
-    // 异常处理
-    if (error.response.data) {
-      const { code, msg } = error.response.data;
-      if (code === ResultEnum.TOKEN_INVALID) {
+    if (error.response && error.response.data) {
+      const msg = error.response.data?.msg || "系统出错";
+      if (error.response.status === 401) {
         ElNotification({
           title: "提示",
           message: "您的会话已过期，请重新登录",
@@ -60,8 +38,10 @@ service.interceptors.response.use(
             location.reload();
           });
       } else {
-        ElMessage.error(msg || "系统出错");
+        ElMessage.error(msg);
       }
+    } else {
+      ElMessage.error("网络错误或服务器无响应");
     }
     return Promise.reject(error.message);
   }

@@ -1,13 +1,4 @@
-import { LoginItem } from "@/types/login";
 import request from "@/utils/request";
-
-export const LoginAPI = (data: LoginItem) => {
-  return request({
-    url: "/sites/login",
-    method: "post",
-    data: JSON.stringify(data),
-  });
-};
 
 class AuthAPI {
   /** 登录 接口*/
@@ -15,15 +6,16 @@ class AuthAPI {
     const formData = new FormData();
     formData.append("username", data.username);
     formData.append("password", data.password);
-    formData.append("captchaKey", data.captchaKey);
-    formData.append("captchaCode", data.captchaCode);
+    // formData.append("captchaKey", data.captchaKey);
+    // formData.append("captchaCode", data.captchaCode);
     return request<any, LoginResult>({
-      url: "/api/v1/auth/login",
+      // url: "/api/v1/auth/login",
+      url: "/sites/login",
       method: "post",
       data: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      // headers: {
+      //   "Content-Type": "multipart/form-data",
+      // },
     });
   }
 
@@ -53,21 +45,36 @@ export interface LoginData {
   /** 密码 */
   password: string;
   /** 验证码缓存key */
-  captchaKey: string;
+  // captchaKey: string;
   /** 验证码 */
-  captchaCode: string;
+  // captchaCode: string;
 }
 
 /** 登录响应 */
 export interface LoginResult {
-  /** 访问token */
-  accessToken?: string;
-  /** 过期时间(单位：毫秒) */
-  expires?: number;
-  /** 刷新token */
-  refreshToken?: string;
-  /** token 类型 */
-  tokenType?: string;
+  // /** 访问token */
+  // accessToken?: string;
+  // /** 过期时间(单位：毫秒) */
+  // expires?: number;
+  // /** 刷新token */
+  // refreshToken?: string;
+  // /** token 类型 */
+  // tokenType?: string;
+  access_token: string;
+  // username: string;
+  user: {
+    value(value: any, roles: string[]): unknown;
+    username: string;
+    data: {
+      id: number;
+      nickname: string | null;
+      info: string | null;
+      avatar_id: string | null;
+      email: string | null;
+      emailBind: boolean;
+    };
+    roles: string[];
+  };
 }
 
 /** 验证码响应 */

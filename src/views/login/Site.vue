@@ -13,7 +13,6 @@
 </template>
 
 <script setup lang="ts">
-import { ElCard } from "element-plus";
 //
 </script>
 

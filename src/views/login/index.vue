@@ -1,74 +1,74 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import Site from "./Site.vue";
-// import { setToken } from "@/utils/auth";
-import { LoginAPI } from "@/api/auth";
-import { LoginItem } from "@/types/login";
-import {
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElButton,
-  ElLink,
-  FormInstance,
-} from "element-plus";
+import { FormInstance } from "element-plus";
+import { useUserStore } from "@/store/modules/user";
+import { LoginData } from "@/api/auth";
+import { TOKEN_KEY } from "@/enums/CacheEnum";
 
-const form = ref<LoginItem>({
+const userStore = useUserStore();
+
+const form = ref<LoginData>({
   username: "test2024",
   password: "1234567",
 });
 
-const rules = ref({
-  username: [
-    { required: true, message: "请输入用户名称", trigger: "blur" },
-    { min: 5, message: "用户名称长度应该大于5", trigger: "blur" },
-  ],
-  password: [
-    { required: true, message: "请输入密码", trigger: "blur" },
-    { min: 6, message: "密码长度应该大于6", trigger: "blur" },
-  ],
+const rules = computed(() => {
+  return {
+    username: [
+      { required: true, message: "请输入用户名称", trigger: "blur" },
+      { min: 5, message: "用户名称长度应该大于5", trigger: "blur" },
+    ],
+    password: [
+      { required: true, message: "请输入密码", trigger: "blur" },
+      { min: 6, message: "密码长度应该大于6", trigger: "blur" },
+    ],
+  };
 });
 
 const router = useRouter();
-const formRef = ref<FormInstance | null>(null);
+const formRef = ref<FormInstance>();
 const isShow = ref(false);
 const title = ref<string | Record<string, string>>("");
 
-const setToken = (token: string) => {
-  localStorage.setItem("access_token", token);
-};
-// 成功的回调函数
+// 登录成功
 const succeed = (data: any) => {
-  setToken(data.access_token);
-  router.push("/");
+  ElMessage.success("登录成功");
+  const token = data.access_token;
+  if (token) {
+    setToken(token);
+    router.push("/"); // 登录成功后重定向到首页
+  } else {
+    failed("登录响应中缺少 access_token");
+  }
 };
 
-// 失败处理函数
+// 设置token
+const setToken = (token: string) => {
+  localStorage.setItem(TOKEN_KEY, "Bearer " + token);
+};
+
+// 登录失败
 const failed = (message: any) => {
   error(message);
 };
 
-const submit = async () => {
-  // 验证表单
-  const valid = await formRef.value?.validate();
-  if (valid) {
-    try {
-      const res = await LoginAPI({
-        username: form.value.username,
-        password: form.value.password,
-      });
-      // 如果响应有数据，验证成功
-      if (res.data) {
-        succeed(res.data);
-      }
-    } catch (error) {
-      failed(error);
+// 提交登录表单
+function submit() {
+  formRef.value?.validate((valid: boolean) => {
+    if (valid) {
+      userStore
+        .login(form.value)
+        .then((data) => {
+          succeed(data);
+        })
+        .catch((error) => {
+          failed(error);
+        });
     }
-  } else {
-    return false;
-  }
-};
+  });
+}
 
 // 显示错误信息
 const error = (msg: string | Record<string, string>) => {
@@ -93,14 +93,10 @@ const error = (msg: string | Record<string, string>) => {
       label-width="75px"
     >
       <el-form-item label="用户名" prop="username">
-        <el-input v-model="form.username" suffix-icon="el-icon-user" />
+        <el-input v-model="form.username" suffix-icon="User" />
       </el-form-item>
       <el-form-item label="密码" prop="password">
-        <el-input
-          v-model="form.password"
-          type="password"
-          suffix-icon="el-icon-lock"
-        />
+        <el-input v-model="form.password" type="password" suffix-icon="Lock" />
       </el-form-item>
 
       <el-form-item class="login-button">
