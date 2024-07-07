@@ -15,8 +15,8 @@ import {
 } from "element-plus";
 
 const form = ref<LoginItem>({
-  username: "",
-  password: "",
+  username: "test2024",
+  password: "1234567",
 });
 
 const rules = ref({
